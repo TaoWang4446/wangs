@@ -108,4 +108,15 @@ public class ImgUtil {
 				.outputQuality(0.8f).toFile("D:/mayunnew.jpg");
 	}
 
+	public static void deleteFileOrPath(String storePath) {
+		File fileOrPath = new File(PathUtil.getImgBasePath()+storePath);
+		if(fileOrPath.isDirectory()){
+			File files[] = fileOrPath.listFiles();
+			for(int i = 0;i<files.length;i++){
+				files[i].delete();
+			}
+		}
+		fileOrPath.delete();
+	}
+
 }
