@@ -5,7 +5,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,10 +23,15 @@ import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.imooc.o2o.dto.ShopExecution;
+import com.imooc.o2o.entity.Area;
 import com.imooc.o2o.entity.PersonInfo;
 import com.imooc.o2o.entity.Shop;
+import com.imooc.o2o.entity.ShopCategory;
 import com.imooc.o2o.enums.ShopStateEnum;
+import com.imooc.o2o.service.AreaService;
+import com.imooc.o2o.service.ShopCategoryService;
 import com.imooc.o2o.service.ShopService;
+import com.imooc.o2o.util.CodeUtil;
 import com.imooc.o2o.util.HttpServletRequestUtil;
 import com.imooc.o2o.util.ImgUtil;
 import com.imooc.o2o.util.PathUtil;
@@ -35,16 +42,45 @@ public class ShopManagementController {
 	
 	@Autowired 
 	private ShopService shopService;
+	@Autowired 
+	private ShopCategoryService shopCategoryService;
+	@Autowired 
+	private AreaService areaService;
+	
+	@RequestMapping(value="getshopinitinfo", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> getShopInitInfo(){
+		Map<String,Object> modelMap = new HashMap<String,Object>();
+		List<ShopCategory> shopCategoryList = new ArrayList<ShopCategory>();
+		List<Area> areaList = new ArrayList<Area>();
+		try{
+			shopCategoryList = shopCategoryService.getShopCategoryList(new ShopCategory());
+			areaList = areaService.getAreaList();
+			modelMap.put("shopCategoryList", shopCategoryList);
+			modelMap.put("areaList", areaList);
+			modelMap.put("success", true);
+		}catch(Exception e){
+			modelMap.put("success", false);
+			modelMap.put("errMsg", e.getMessage());
+		}
+		return modelMap;
+	}
+	
 	@RequestMapping(value="registershop", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<String, Object> registerShop(HttpServletRequest request){
 		Map<String,Object> modelMap = new HashMap<String,Object>();
+		if(!CodeUtil.checkVerifyCode(request)){
+			modelMap.put("success", false);
+			modelMap.put("errMsg", "请检查验证码是否正确!");
+			return modelMap;
+		}
 		//1 接收并转化相应的参数 包括店铺信息以及图片信息
 		String shopStr = HttpServletRequestUtil.getString(request, "shopStr");
 		ObjectMapper mapper = new ObjectMapper();
 		Shop shop = null;
 		try{
-			shop = mapper.readValue("shopStr", Shop.class);
+			shop = mapper.readValue(shopStr, Shop.class);
 		}catch(Exception e){
 			modelMap.put("success", false);
 			modelMap.put("errMsg", e.getMessage());
@@ -65,22 +101,7 @@ public class ShopManagementController {
 			PersonInfo owner = new PersonInfo();
 			owner.setUserId(1L);
 			shop.setOwner(owner);
-			File shopImgFile = new File(PathUtil.getImgBasePath()+ImgUtil.getRandomFileName());
-			/*try {
-				shopImgFile.createNewFile();
-			} catch (IOException e) {
-				modelMap.put("success", false);
-				modelMap.put("errMsg", e.getMessage());
-				return modelMap;
-			}*/
-			/*try {
-				inputStreamToFile(shopImg.getInputStream(),shopImgFile);
-			} catch (IOException e) {
-				modelMap.put("success", false);
-				modelMap.put("errMsg", e.getMessage());
-				return modelMap;
-			}*/
-//			ShopExecution se = shopService.addShop(shop, shopImgFile);
+			shop.setAdvice(ShopStateEnum.CHECK.getStateInfo());
 			ShopExecution se;
 			try {
 				se = shopService.addShop(shop, shopImg.getInputStream(),shopImg.getOriginalFilename());
