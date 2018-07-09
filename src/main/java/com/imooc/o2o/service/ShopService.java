@@ -9,6 +9,16 @@ import com.imooc.o2o.exceptions.ShopOperationException;
 public interface ShopService {
 
 	/**
+	 * 店铺列表 分页查询
+	 * 
+	 * @param shopCondition
+	 * @param pageIndex
+	 * @param pageSize
+	 * @return
+	 */
+	public ShopExecution getShopList(Shop shopCondition, int pageIndex, int pageSize);
+
+	/**
 	 * 通过shopId 获取 shop信息
 	 * 
 	 * @param ShopId

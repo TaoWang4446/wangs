@@ -2,6 +2,7 @@ package com.imooc.o2o.service.impl;
 
 import java.io.InputStream;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import com.imooc.o2o.enums.ShopStateEnum;
 import com.imooc.o2o.exceptions.ShopOperationException;
 import com.imooc.o2o.service.ShopService;
 import com.imooc.o2o.util.ImgUtil;
+import com.imooc.o2o.util.PageCalculator;
 import com.imooc.o2o.util.PathUtil;
 
 @Service
@@ -24,7 +26,6 @@ public class ShopServiceImpl implements ShopService {
 
 	@Override
 	@Transactional
-	// public ShopExecution addShop(Shop shop, File shopImg) {
 	public ShopExecution addShop(Shop shop, InputStream shopImgInputStream, String fileName) {
 		// 控制判断
 		if (null == shop) {
@@ -87,7 +88,7 @@ public class ShopServiceImpl implements ShopService {
 			try {
 				if (shopImgInputStream != null && fileName != null && !"".equals(fileName)) {
 					Shop tempShop = shopDao.queryByShopId(shop.getShopId());
-					if (tempShop.getShopImg() != null ) {
+					if (tempShop.getShopImg() != null) {
 						ImgUtil.deleteFileOrPath(tempShop.getShopImg());
 					}
 					addShopImg(shop, shopImgInputStream, fileName);
@@ -106,6 +107,21 @@ public class ShopServiceImpl implements ShopService {
 				throw new ShopOperationException("modifyShop error: " + e.getMessage());
 			}
 		}
+	}
+
+	@Override
+	public ShopExecution getShopList(Shop shopCondition, int pageIndex, int pageSize) {
+		ShopExecution shopExecution = new ShopExecution();
+		int rowIndex = PageCalculator.calculateRowIndex(pageIndex, pageSize);
+		List<Shop> shopList = shopDao.queryShopList(shopCondition, rowIndex, pageSize);
+		int count = shopDao.queryShopCount(shopCondition);
+		if(shopList != null){
+			shopExecution.setShopList(shopList);
+			shopExecution.setCount(count);
+		}else{
+			shopExecution.setState(ShopStateEnum.INNER_ERROR.getState());
+		}
+		return shopExecution;
 	}
 
 }
