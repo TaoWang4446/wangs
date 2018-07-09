@@ -257,18 +257,4 @@ public class ShopManagementController {
 			return modelMap;
 		}
 	}
-
-	/*
-	 * private static void inputStreamToFile(InputStream ins,File file){
-	 * OutputStream os = null; try{ os = new FileOutputStream(file); int
-	 * byteRead = 0; byte[] buffer = new byte[1024]; while((byteRead =
-	 * ins.read(buffer)) != -1){ os.write(buffer, 0, byteRead); }
-	 * }catch(Exception e){ throw new
-	 * RuntimeException("调用 inputStreamToFile 产生异常:"+e.getMessage()); }finally{
-	 * try{ if(os != null){ os.close(); } if(ins != null){ ins.close(); }
-	 * }catch(IOException e){ throw new
-	 * RuntimeException("调用 inputStreamToFile 关闭时 Io 异常:"+e.getMessage()); }
-	 * 
-	 * } }
-	 */
 }
